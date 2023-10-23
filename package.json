@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "deploy-first": "pm2 deploy ecosystem.config.js production setup",
-    "deploy": "pm2 deploy ecosystem.config.js production",
+    "deploy": "pm2 deploy ecosystem.config.js production"
   },
   "dependencies": {
     "@blueprintjs/core": "^5.5.1",

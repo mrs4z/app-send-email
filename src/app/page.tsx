@@ -1,95 +1,122 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client';
+
+import { EmailTemplate } from "@/components/email-template";
+import { FormGroup, InputGroup, Button, Divider } from "@blueprintjs/core";
+import { useEffect, useState } from 'react';
+import { toast } from "react-toastify";
+import useLocalStorage from "./hooks/useLocalStorage";
+import MailAdd from "@/components/mail-add";
+import MailSelector from "@/components/mail-selector";
 
 export default function Home() {
+  const [activeItemStorage, setActiveItemStorage] = useLocalStorage("activeItem", null);
+  const [emailStorage, setEmailStorage] = useLocalStorage("email", "");
+  const [emailListStorage, setEmailListStorage] = useLocalStorage("emailList", []);
+
+  const [emails, setEmails] = useState([]);
+  const [activeItem, setActiveItem] = useState(activeItemStorage); 
+  const [email, setEmail] = useState(emailStorage);
+  const [emailsList, setEmailsList] = useState<string[]>(emailListStorage);
+  
+  // validation
+  const [isValidItem, setIsValidItem] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch('/api/all-files');
+      const data = await response.json();
+      setEmails(data);
+    
+    }
+
+    fetchData();
+
+  }, []);
+
+  const onSend = async () => {
+    setIsLoading(true);
+    fetch('/api/send-mail', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json' 
+      },
+      body: JSON.stringify({
+        email: email,
+        template: activeItem
+      }) 
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log(data);
+      toast('Письмо отправлено', { autoClose: 2000, type: 'success', position: 'top-center' });
+    })
+    
+    .catch(error => {
+      console.error('There has been a problem with your fetch operation:', error);
+      toast(`${error}`, { autoClose: 2000, type: 'error', position: 'top-center' });
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
+  };
+
+  const onChangeItem = (e: any) => {
+    setActiveItem(e);
+    setActiveItemStorage(e);
+  }
+
+  useEffect(() => {
+    setIsValidItem(!!activeItem);
+  }, [activeItem]);
+
+  const onAddEmail = (emailItem: string) => {
+    if (!emailsList.includes(emailItem)) {
+      setEmailsList([...emailsList, emailItem]);
+      setEmailListStorage([...emailsList, emailItem]);
+      console.log(emailItem);
+      if(!email) onEmailSelect(emailItem);
+    } else {
+      toast('Почта уже добавлена', { autoClose: 2000, type: 'error', position: 'top-center' });
+    }
+  }
+
+  const onEmailSelect = (email: string) => {
+    setEmail(email);
+    setEmailStorage(email);
+  }
+  
+  
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
+    <>
+      <div className="form__added">
         <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+          <MailAdd onAddEmail={onAddEmail} />
         </div>
+        <Divider />
+        <div>
+          <MailSelector emailSelected={email} emails={emailsList} onEmailSelected={onEmailSelect} />
+        </div>
+        <form>
+          <FormGroup
+            label="Выберите шаблон"
+            labelInfo="(обязательно)"
+          >
+            <div>
+              {emails.map((email, index) => (
+                <EmailTemplate  activeItem={activeItem} key={index} email={email} onChange={(e: any) => onChangeItem(e)} />
+                )
+                )}
+            </div>
+          </FormGroup>
+          <Button onClick={onSend} disabled={!isValidItem || !email} loading={isLoading}>Отправить</Button>
+        </form>
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </>
   )
 }

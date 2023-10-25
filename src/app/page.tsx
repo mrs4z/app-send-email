@@ -24,7 +24,7 @@ export default function Home() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch('/api/all-files');
+      const response = await fetch('/api/all-files', { cache: 'no-store' });
       const data = await response.json();
       setEmails(data);
     

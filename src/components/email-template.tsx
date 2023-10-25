@@ -14,7 +14,7 @@ export const EmailTemplate = ({ email, activeItem, onChange }: IProps) => {
 
     useEffect(() => {
         const fetchData = async () => {
-          const response = await fetch(`/api/screens/${email}`);
+          const response = await fetch(`/api/screens/${email}`, { cache: 'no-store' });
           const blob = await response.blob();
             const objectURL: any = URL.createObjectURL(blob);
             setImageSrc(objectURL);

@@ -19,14 +19,13 @@ export const EmailTemplate = ({ email, activeItem, onChange }: IProps) => {
             const objectURL: any = URL.createObjectURL(blob);
             setImageSrc(objectURL);
         }
-    
+
         fetchData();
-    
+
       }, []);
-    
+
     const togglePreview = () => {
         setIsShowPreview(!isShowPreview);
-    
     }
 
     const onChangeItem = () => {

@@ -6,7 +6,7 @@ import { ToastContainer } from 'react-toastify';
 
 export const metadata: Metadata = {
   title: 'Тестирование отправки писем',
-  description: 'Отправка писем для сервиса photoindustry',
+  description: 'Отправка писем ejs',
 }
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning={true}>
+      <body suppressHydrationWarning={false}>
           <div className="wrapper">
             <h1>{metadata.title as string}</h1>
             <p>{metadata.description}</p>

@@ -1,11 +1,20 @@
 import { NextRequest } from "next/server";
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { renderEjsToHtml } from "@/utils/render";
 
 
 export async function GET(request: NextRequest) {
     const directory = path.join(process.cwd(), 'emails');
-    const files = await getFilesWithExtension(directory, 'html');
+    const files = await getFilesWithExtension(directory, 'ejs');
+
+    const filesConverted = [];
+
+    for(const item of files) {
+        filesConverted.push(await renderEjsToHtml(item))
+    }
+    // console.log(files);
+
     return new Response(JSON.stringify(files), {
         status: 200
     });

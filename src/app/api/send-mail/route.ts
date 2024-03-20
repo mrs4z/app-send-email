@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import puppeteer from 'puppeteer';
-import fs from 'fs/promises'; 
+import fs from 'fs/promises';
 import nodemailer from 'nodemailer';
+import {renderEjsToHtml} from "@/utils/render";
 
 
 export async function POST(request: NextRequest) {
@@ -13,32 +14,36 @@ export async function POST(request: NextRequest) {
     }), {
         status: 200
     })
-    
+
 }
 
 async function sendMail(email: string, htmlTemplate: string) {
-    const path = await fs.readFile(`emails/${htmlTemplate}`, 'utf8');
-    let transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: 'mrs4zjs@gmail.com',
-        pass: 'uuup jijt zmfo rdkd'
-      }
-    });
-  
+    // const path = await fs.readFile(`emails/${htmlTemplate}`, 'utf8');
+    const path = await renderEjsToHtml(htmlTemplate)
+    const config = {
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+            user: '',
+            pass: ''
+        },
+        tls: {
+            rejectUnauthorized: false
+        }
+    };
+
+    let transporter = nodemailer.createTransport(config);
+
     let info = await transporter.sendMail({
-      from: '"Test MAIL" <mrs4zjs@gmail.com>',
-      // to: 'rodionkislov@yandex.ru',
+      from: `"Test MAIL" <${config.auth.user}>`,
       to: email,
-      // to: 'bolshov-96@bk.ru',
-      // to: 'mrs4z@icloud.com',
-      // to: 'mrs4zjs@gmail.com',
       subject: 'TEST',
       text: '',
       html: path
     });
-  
+
+    console.log(info);
+
     return info.messageId;
   }
